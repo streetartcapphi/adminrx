@@ -34,13 +34,10 @@ injectTapEventPlugin();
 ReactDOM.render(<HashRouter>
     <Switch>
     <Route exact={true} path="/" component={(props) =>
-
       !s.isConnected() ?
         <Redirect to="/login" />
         :
         <div>
-       <Link to={"/login"} > login
-       </Link>
         <Application>
             <MapPage service={s} {...props} />
         </Application>

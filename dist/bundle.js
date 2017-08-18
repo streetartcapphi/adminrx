@@ -1981,7 +1981,6 @@ ReactDOM.render(React.createElement(react_router_dom_1.HashRouter, null,
                     React.createElement(react_router_dom_1.Redirect, { to: "/login" })
                     :
                         React.createElement("div", null,
-                            React.createElement(react_router_dom_1.Link, { to: "/login" }, " login"),
                             React.createElement(Application_1.Application, null,
                                 React.createElement(MapPage_1.MapPage, __assign({ service: s }, props))));
             } }),
