@@ -42012,16 +42012,20 @@ var LoginPage = (function (_super) {
             _this.setState({ open: false });
         };
         _this.handleSubmit = function () {
-            _this.props.service.connect(_this.state.login, _this.state.password);
+            var login = _this.refs.login.getValue();
+            if (login === null || login === "" || typeof login === 'undefined') {
+                throw "login is not defined";
+            }
+            var pwd = _this.refs.password.getValue();
+            console.log("connect ");
+            _this.props.service.connect(login, pwd);
             setTimeout(function () {
                 return _this.setState({ open: false });
             }, 1000);
         };
         _this.state = {
             checking: false,
-            open: true,
-            login: null,
-            password: null
+            open: true
         };
         return _this;
     }
@@ -42039,10 +42043,10 @@ var LoginPage = (function (_super) {
             React.createElement(Dialog_1.default, { title: "Login to Github", actions: actions, modal: false, open: this.state.open, onRequestClose: this.handleClose },
                 "Please enter your credentials to access content in R/W ",
                 React.createElement("br", null),
-                React.createElement(TextField_1.default, { hintText: "Login", floatingLabelText: "Login", value: this.state.login }),
+                React.createElement(TextField_1.default, { hintText: "Login", floatingLabelText: "Login", ref: "login" }),
                 " ",
                 React.createElement("br", null),
-                React.createElement(TextField_1.default, { hintText: "Password", type: "password", value: this.state.password }),
+                React.createElement(TextField_1.default, { hintText: "Password", type: "password", ref: "password" }),
                 React.createElement("br", null)));
     };
     return LoginPage;

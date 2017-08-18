@@ -20,8 +20,6 @@ interface LoginProps {
 interface LoginState {
   open : boolean;
   checking : boolean;
-  login : string;
-  password : string;
 }
 
 export class LoginPage extends React.Component<LoginProps, LoginState> {
@@ -30,9 +28,7 @@ export class LoginPage extends React.Component<LoginProps, LoginState> {
     super(props);
     this.state = {
       checking : false,
-      open : true,
-      login: null,
-      password : null
+      open : true
     };
   }
 
@@ -45,7 +41,13 @@ export class LoginPage extends React.Component<LoginProps, LoginState> {
     };
 
   handleSubmit = () => {
-    this.props.service.connect(this.state.login, this.state.password);
+    var login = (this.refs.login as TextField).getValue();
+    if (login === null || login === "" || typeof login ==='undefined' ) {
+      throw "login is not defined";
+    }
+    var pwd = (this.refs.password as TextField).getValue();
+    console.log("connect ");
+    this.props.service.connect(login, pwd);
     setTimeout(() =>
     this.setState({open : false}), 1000);
   };
@@ -83,8 +85,8 @@ export class LoginPage extends React.Component<LoginProps, LoginState> {
               onRequestClose={this.handleClose}
        >
         Please enter your credentials to access content in R/W <br/>
-        <TextField hintText="Login" floatingLabelText="Login" value={this.state.login}/> <br/>
-        <TextField hintText="Password"  type="password" value={this.state.password}/><br/>
+        <TextField hintText="Login" floatingLabelText="Login" ref="login"/> <br/>
+        <TextField hintText="Password" type="password" ref="password"/><br/>
 
         </Dialog>
 
