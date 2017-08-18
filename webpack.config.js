@@ -1,3 +1,6 @@
+
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+
 module.exports = {
 
     entry: "./src/index.tsx",
@@ -40,7 +43,17 @@ module.exports = {
         historyApiFallback: {
         index: 'index.html'
       }
-    }
+    },
 
+    plugins: [
+      new CopyWebpackPlugin([
+              {from:'node_modules/react/dist',to:'libs'},
+              {from:'node_modules/react-dom/dist',to:'libs'},
+              {from:'node_modules/leaflet/dist',to:'libs'},
+              {from:'node_modules/react-leaflet/dist',to:'libs'},
+              {from:'node_modules/github-api/dist',to:'libs'}
+
+          ]),
+    ]
 
 };

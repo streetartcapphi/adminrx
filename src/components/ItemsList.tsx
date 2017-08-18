@@ -103,7 +103,7 @@ let togglePublished = (e) => {
 }
 
 let toggleNotPublished = (e) => {
-   t.stateToElement( false, !t.state.notpublished));
+   t.stateToElement( false, !t.state.notpublished);
    t.savedCallBack(t.props.item);
 }
 
