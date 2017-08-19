@@ -75,7 +75,7 @@ export class StreetElementService {
 
     public loadView(viewPath : string) : Promise<Array<ViewModelElement>>{
 
-       var d = new Deferred();
+       let d = new Deferred();
 
         // load view
         this.repo.getContents(this.branch,viewPath, true, (r:any,t:any) => {
@@ -89,13 +89,13 @@ export class StreetElementService {
             var a : Array<ViewModelElement> = [];
             console.log("get all elements ");
 
-            var allDeferred : Array<Promise<GeoJSONFeatureCollection<GeoJSON.Point>>> = [];
+            let allDeferred : Array<Promise<GeoJSONFeatureCollection<GeoJSON.Point>>> = [];
 
               // get all elements and input path
-            for(var e of t.features) {
-
+            for(var el of t.features) {
+               let e = el;
                console.log("view element " + JSON.stringify(e));
-               var editurl = e.properties.editURL;
+               let editurl = e.properties.editURL;
 
                var relativePath = null;
 
@@ -107,7 +107,14 @@ export class StreetElementService {
                       console.log("matched :" + JSON.stringify(resultat));
                  } else {
                      console.log("fail to extract relativeurl from " + editurl);
-                     continue;
+                     // try ggeojson
+                     r =  /.*(input.*\.geojson)/g;
+                     resultat = r.exec(editurl);
+                     if (resultat) {
+                        // continue
+                     } else {
+                       continue;
+                     }
                  }
 
                  relativePath = resultat[1];
@@ -117,15 +124,30 @@ export class StreetElementService {
                  console.log("construct relative path from elements");
 
                  let d = new Date(e.properties.post_date);
+                 console.log("post date :");
+                 console.log(d);
                  let id = e.properties.id;
                  let author = e.properties.author;
 
+                 var suffix = ".geojson";
                  var folder = "capphi/instagram";
                  if (author !== "cap_phi") {
                    folder = "contrib";
+                   suffix = ".json";
                  }
 
-                 relativePath = "input/" + folder + "/" +  (d.getUTCFullYear()) + "-" + (d.getMonth() + 1) + "-" + (d.getDay() + 1) + "/" + id + ".json";
+                var month = "" + (d.getMonth() + 1);
+                if (month.length < 2)
+                {
+                  month = "0" + month;
+                }
+
+                var day = "" +d.getDate() ;
+                if (day.length < 2) {
+                  day = "0" + day;
+                }
+
+                 relativePath = "input/" + folder + "/" +  (d.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
 
               }
 
@@ -144,31 +166,32 @@ export class StreetElementService {
                  pro.then( (elements:GeoJSONFeatureCollection<GeoJSON.Point>)  => {
                     console.log("promise resolved "+pro);
                     if (elements.features) {
+                       console.log("adding element :");
+                       console.log(elements.features[0]);
                        a.push({ content : elements.features[0], filePath:closedRelativePath, id:id} as ViewModelElement);
                     }
                   }).catch( (e) => {
                          console.log("remove the element, error from server :" + JSON.stringify(e));
                   })
 
-                 this.repo.getContents(this.branch,closedRelativePath,true, (r:any,t:any) => {
-                   try {
-                     // console.log("content received");
-                     if (r) {
-                       console.error("content for " + closedRelativePath + " errored");
-                       dp.reject("error in getting content for :" + JSON.stringify(r));
-                     } else {
-                       console.log("content resolved for " + dp);
-                       try {
-                       dp.resolve(t);
-                          console.log("resolved call ");
-                       } catch(err) {
-                         console.error(err);
-                       }
-                     }
-                   } catch(e) {
-                     console.error(e);
+                 var contentPromise : Promise<any> = this.repo.getContents(this.branch,closedRelativePath,true);
+
+                 contentPromise.then( (t) => {
+                   console.log("content resolved for " + dp);
+                   console.log(t);
+                   if (t.data) {
+                     dp.resolve(t.data);
+
+                   } else {
+                     console.error(t);
+                     dp.reject("error in getting element " + closedRelativePath);
                    }
-                 } );
+                       console.log("resolved call ");
+
+                 }).catch( (r)=> {
+                   console.error("content for " + closedRelativePath + " errored");
+                   dp.reject("error in getting content for :" + JSON.stringify(r));
+                 });
 
 
               }
@@ -177,7 +200,9 @@ export class StreetElementService {
 
             } // for
 
-            Promise.all(allDeferred).then( () => {
+            Promise.all(allDeferred.map(p => p.catch(() => undefined))).then( () => {
+              console.log("all promise finished");
+              console.log(a);
               d.resolve(a);
             });
 

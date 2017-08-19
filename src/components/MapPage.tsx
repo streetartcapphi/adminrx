@@ -6,8 +6,8 @@ import Toggle from 'material-ui/Toggle';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Paper from 'material-ui/Paper';
-
-
+import CircularProgress from 'material-ui/CircularProgress';
+import FlatButton from 'material-ui/FlatButton';
 
 
 import { StMap, StMapProps }  from './StMap';
@@ -50,20 +50,29 @@ export interface MapPageProps {
  public loadView(viewPath : string) : void {
    // views/bydate/[XX]months/content.geojson
 
+
       let result = this.props.service.loadView(viewPath).then( (l) => {
 
+         console.log("lost received from loadView :");
+         console.log(l);
          var stmap : StMap = (this.refs["mymap"]) as StMap;
 
          // set the loaded elements
          this.setState({loadedElements:l, isLoading:false})
+
          stmap.addAllElements(l);
          stmap.setAllElements(l);
 
          // zoom to all elements in layer
+        try {
+                 stmap.zoomToAllMarkers();
+        } catch(e) {
 
-         stmap.zoomToAllMarkers();
-
+        }
        }).catch((e) => {
+
+         console.error(e);
+
          // error in getting the result,
          this.setState({loadedElements : [] ,isLoading:false })
        }) ;
@@ -96,7 +105,9 @@ export interface MapPageProps {
      var r = this.service.saveAlonePosition(e, "update position to " + e.content.geometry.coordinates);
      r.then( (e) => {
        console.log("saved !!");
-     } )
+     } ).catch( (e) => {
+       console.error(e);
+     });
 
      return r;
    };
@@ -106,7 +117,9 @@ export interface MapPageProps {
      var r = this.service.saveAlonePosition(e, "update properties");
      r.then( (e) => {
        console.log("saved !!");
-     } )
+     } ).catch( (e) => {
+       console.error(e);
+     });
    };
 
 
@@ -117,11 +130,46 @@ export interface MapPageProps {
      let paddingStyle = { padding:"12px" };
      return    <div>
 
+        <div>
+         <FlatButton onClick={ (e) => {
+                  var stmap : StMap = (this.refs["mymap"]) as StMap;
+                  stmap.addAllElements([]);
+                  stmap.setAllElements([]);
+                  this.setState({loadedElements:[], isLoading:true});
+                  this.loadView("views/unvalidated/content.geojson")
+
+          } } label={"Non validé"} primary={true} />
+          <FlatButton onClick={ (e) => {
+             var stmap : StMap = (this.refs["mymap"]) as StMap;
+             stmap.addAllElements([]);
+             stmap.setAllElements([]);
+             this.setState({loadedElements:[],isLoading:true});
+             this.loadView("views/cumulbydate/1weeks/content.geojson");
+
+           } } label={"Dernière semaine"} primary={true} />
+
+         <FlatButton onClick={ (e) => {
+            var stmap : StMap = (this.refs["mymap"]) as StMap;
+            stmap.addAllElements([]);
+            stmap.setAllElements([]);
+            this.setState({loadedElements:[],isLoading:true});
+            this.loadView("views/cumulbydate/1months/content.geojson");
+
+          } } label={"Mois courant"} primary={true} />
+
+        </div>
          <StMap ref="mymap" center={position} onElements={this.visibleElementsChanged} onSaveElement={this.saveElement} />
 
          <Drawer width={400} openSecondary={true}
              open={this.state.open} >
              <AppBar title="Vue" />
+
+             { this.state.isLoading ?
+                <div style={{"text-align": "center", "vertical-align": "middle"}}>
+                 <CircularProgress size={200} thickness={7} />
+                 </div>
+                 : []
+              }
 
              <div style={paddingStyle}>
                  <ItemsList displayList={this.state.loadedElements}

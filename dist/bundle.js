@@ -29748,6 +29748,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(1);
 var Drawer_1 = __webpack_require__(288);
 var AppBar_1 = __webpack_require__(298);
+var CircularProgress_1 = __webpack_require__(534);
+var FlatButton_1 = __webpack_require__(514);
 var StMap_1 = __webpack_require__(322);
 var ItemsList_1 = __webpack_require__(459);
 ;
@@ -29773,6 +29775,8 @@ var MapPage = (function (_super) {
             var r = _this.service.saveAlonePosition(e, "update position to " + e.content.geometry.coordinates);
             r.then(function (e) {
                 console.log("saved !!");
+            }).catch(function (e) {
+                console.error(e);
             });
             return r;
         };
@@ -29780,6 +29784,8 @@ var MapPage = (function (_super) {
             var r = _this.service.saveAlonePosition(e, "update properties");
             r.then(function (e) {
                 console.log("saved !!");
+            }).catch(function (e) {
+                console.error(e);
             });
         };
         _this.service = props.service;
@@ -29791,25 +29797,59 @@ var MapPage = (function (_super) {
         // views/bydate/[XX]months/content.geojson
         var _this = this;
         var result = this.props.service.loadView(viewPath).then(function (l) {
+            console.log("lost received from loadView :");
+            console.log(l);
             var stmap = (_this.refs["mymap"]);
             // set the loaded elements
             _this.setState({ loadedElements: l, isLoading: false });
             stmap.addAllElements(l);
             stmap.setAllElements(l);
             // zoom to all elements in layer
-            stmap.zoomToAllMarkers();
+            try {
+                stmap.zoomToAllMarkers();
+            }
+            catch (e) {
+            }
         }).catch(function (e) {
+            console.error(e);
             // error in getting the result,
             _this.setState({ loadedElements: [], isLoading: false });
         });
     };
     MapPage.prototype.render = function () {
+        var _this = this;
         var position = { lat: 51.505, lng: -0.09 };
         var paddingStyle = { padding: "12px" };
         return React.createElement("div", null,
+            React.createElement("div", null,
+                React.createElement(FlatButton_1.default, { onClick: function (e) {
+                        var stmap = (_this.refs["mymap"]);
+                        stmap.addAllElements([]);
+                        stmap.setAllElements([]);
+                        _this.setState({ loadedElements: [], isLoading: true });
+                        _this.loadView("views/unvalidated/content.geojson");
+                    }, label: "Non validé", primary: true }),
+                React.createElement(FlatButton_1.default, { onClick: function (e) {
+                        var stmap = (_this.refs["mymap"]);
+                        stmap.addAllElements([]);
+                        stmap.setAllElements([]);
+                        _this.setState({ loadedElements: [], isLoading: true });
+                        _this.loadView("views/cumulbydate/1weeks/content.geojson");
+                    }, label: "Dernière semaine", primary: true }),
+                React.createElement(FlatButton_1.default, { onClick: function (e) {
+                        var stmap = (_this.refs["mymap"]);
+                        stmap.addAllElements([]);
+                        stmap.setAllElements([]);
+                        _this.setState({ loadedElements: [], isLoading: true });
+                        _this.loadView("views/cumulbydate/1months/content.geojson");
+                    }, label: "Mois courant", primary: true })),
             React.createElement(StMap_1.StMap, { ref: "mymap", center: position, onElements: this.visibleElementsChanged, onSaveElement: this.saveElement }),
             React.createElement(Drawer_1.default, { width: 400, openSecondary: true, open: this.state.open },
                 React.createElement(AppBar_1.default, { title: "Vue" }),
+                this.state.isLoading ?
+                    React.createElement("div", { style: { "text-align": "center", "vertical-align": "middle" } },
+                        React.createElement(CircularProgress_1.default, { size: 200, thickness: 7 }))
+                    : [],
                 React.createElement("div", { style: paddingStyle },
                     React.createElement(ItemsList_1.ItemsList, { displayList: this.state.loadedElements, selectedElement: this.elementSelected, onSaveElement: this.saveElement }))));
     };
@@ -47212,8 +47252,9 @@ var StreetElementService = (function () {
             console.log("get all elements ");
             var allDeferred = [];
             var _loop_1 = function () {
+                var e = el;
                 console.log("view element " + JSON.stringify(e));
-                editurl = e.properties.editURL;
+                var editurl = e.properties.editURL;
                 relativePath = null;
                 if (editurl) {
                     console.log("get the relative url");
@@ -47224,20 +47265,40 @@ var StreetElementService = (function () {
                     }
                     else {
                         console.log("fail to extract relativeurl from " + editurl);
-                        return "continue";
+                        // try ggeojson
+                        r = /.*(input.*\.geojson)/g;
+                        resultat = r.exec(editurl);
+                        if (resultat) {
+                            // continue
+                        }
+                        else {
+                            return "continue";
+                        }
                     }
                     relativePath = resultat[1];
                 }
                 if (relativePath == null) {
                     console.log("construct relative path from elements");
                     var d_1 = new Date(e.properties.post_date);
+                    console.log("post date :");
+                    console.log(d_1);
                     var id = e.properties.id;
                     var author = e.properties.author;
+                    suffix = ".geojson";
                     folder = "capphi/instagram";
                     if (author !== "cap_phi") {
                         folder = "contrib";
+                        suffix = ".json";
                     }
-                    relativePath = "input/" + folder + "/" + (d_1.getUTCFullYear()) + "-" + (d_1.getMonth() + 1) + "-" + (d_1.getDay() + 1) + "/" + id + ".json";
+                    month = "" + (d_1.getMonth() + 1);
+                    if (month.length < 2) {
+                        month = "0" + month;
+                    }
+                    day = "" + d_1.getDate();
+                    if (day.length < 2) {
+                        day = "0" + day;
+                    }
+                    relativePath = "input/" + folder + "/" + (d_1.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
                 }
                 var closedRelativePath = relativePath;
                 if (closedRelativePath != null) {
@@ -47249,42 +47310,40 @@ var StreetElementService = (function () {
                     pro_1.then(function (elements) {
                         console.log("promise resolved " + pro_1);
                         if (elements.features) {
+                            console.log("adding element :");
+                            console.log(elements.features[0]);
                             a.push({ content: elements.features[0], filePath: closedRelativePath, id: id_1 });
                         }
                     }).catch(function (e) {
                         console.log("remove the element, error from server :" + JSON.stringify(e));
                     });
-                    _this.repo.getContents(_this.branch, closedRelativePath, true, function (r, t) {
-                        try {
-                            // console.log("content received");
-                            if (r) {
-                                console.error("content for " + closedRelativePath + " errored");
-                                dp_1.reject("error in getting content for :" + JSON.stringify(r));
-                            }
-                            else {
-                                console.log("content resolved for " + dp_1);
-                                try {
-                                    dp_1.resolve(t);
-                                    console.log("resolved call ");
-                                }
-                                catch (err) {
-                                    console.error(err);
-                                }
-                            }
+                    contentPromise = _this.repo.getContents(_this.branch, closedRelativePath, true);
+                    contentPromise.then(function (t) {
+                        console.log("content resolved for " + dp_1);
+                        console.log(t);
+                        if (t.data) {
+                            dp_1.resolve(t.data);
                         }
-                        catch (e) {
-                            console.error(e);
+                        else {
+                            console.error(t);
+                            dp_1.reject("error in getting element " + closedRelativePath);
                         }
+                        console.log("resolved call ");
+                    }).catch(function (r) {
+                        console.error("content for " + closedRelativePath + " errored");
+                        dp_1.reject("error in getting content for :" + JSON.stringify(r));
                     });
                 }
             };
-            var editurl, relativePath, r, resultat, folder;
+            var relativePath, r, resultat, suffix, folder, month, day, contentPromise;
             // get all elements and input path
             for (var _i = 0, _a = t.features; _i < _a.length; _i++) {
-                var e = _a[_i];
+                var el = _a[_i];
                 _loop_1();
             } // for
-            Promise.all(allDeferred).then(function () {
+            Promise.all(allDeferred.map(function (p) { return p.catch(function () { return undefined; }); })).then(function () {
+                console.log("all promise finished");
+                console.log(a);
                 d.resolve(a);
             });
         });
@@ -48859,6 +48918,304 @@ var keyOf = function keyOf(oneKeyObj) {
 };
 
 module.exports = keyOf;
+
+/***/ }),
+/* 534 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = undefined;
+
+var _CircularProgress = __webpack_require__(535);
+
+var _CircularProgress2 = _interopRequireDefault(_CircularProgress);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _CircularProgress2.default;
+
+/***/ }),
+/* 535 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends2 = __webpack_require__(10);
+
+var _extends3 = _interopRequireDefault(_extends2);
+
+var _objectWithoutProperties2 = __webpack_require__(9);
+
+var _objectWithoutProperties3 = _interopRequireDefault(_objectWithoutProperties2);
+
+var _getPrototypeOf = __webpack_require__(4);
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _classCallCheck2 = __webpack_require__(3);
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = __webpack_require__(5);
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _possibleConstructorReturn2 = __webpack_require__(6);
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = __webpack_require__(7);
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _simpleAssign = __webpack_require__(8);
+
+var _simpleAssign2 = _interopRequireDefault(_simpleAssign);
+
+var _react = __webpack_require__(1);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(0);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _autoPrefix = __webpack_require__(64);
+
+var _autoPrefix2 = _interopRequireDefault(_autoPrefix);
+
+var _transitions = __webpack_require__(12);
+
+var _transitions2 = _interopRequireDefault(_transitions);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getRelativeValue(value, min, max) {
+  var clampedValue = Math.min(Math.max(min, value), max);
+  return clampedValue / (max - min);
+}
+
+function getArcLength(fraction, props) {
+  return fraction * Math.PI * (props.size - props.thickness);
+}
+
+function getStyles(props, context) {
+  var max = props.max,
+      min = props.min,
+      size = props.size,
+      value = props.value;
+  var palette = context.muiTheme.baseTheme.palette;
+
+
+  var styles = {
+    root: {
+      position: 'relative',
+      display: 'inline-block',
+      width: size,
+      height: size
+    },
+    wrapper: {
+      width: size,
+      height: size,
+      display: 'inline-block',
+      transition: _transitions2.default.create('transform', '20s', null, 'linear'),
+      transitionTimingFunction: 'linear'
+    },
+    svg: {
+      width: size,
+      height: size,
+      position: 'relative'
+    },
+    path: {
+      stroke: props.color || palette.primary1Color,
+      strokeLinecap: 'round',
+      transition: _transitions2.default.create('all', '1.5s', null, 'ease-in-out')
+    }
+  };
+
+  if (props.mode === 'determinate') {
+    var relVal = getRelativeValue(value, min, max);
+    styles.path.transition = _transitions2.default.create('all', '0.3s', null, 'linear');
+    styles.path.strokeDasharray = getArcLength(relVal, props) + ', ' + getArcLength(1, props);
+  }
+
+  return styles;
+}
+
+var CircularProgress = function (_Component) {
+  (0, _inherits3.default)(CircularProgress, _Component);
+
+  function CircularProgress() {
+    (0, _classCallCheck3.default)(this, CircularProgress);
+    return (0, _possibleConstructorReturn3.default)(this, (CircularProgress.__proto__ || (0, _getPrototypeOf2.default)(CircularProgress)).apply(this, arguments));
+  }
+
+  (0, _createClass3.default)(CircularProgress, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this.scalePath(this.refs.path);
+      this.rotateWrapper(this.refs.wrapper);
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      clearTimeout(this.scalePathTimer);
+      clearTimeout(this.rotateWrapperTimer);
+    }
+  }, {
+    key: 'scalePath',
+    value: function scalePath(path) {
+      var _this2 = this;
+
+      var step = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+      if (this.props.mode !== 'indeterminate') return;
+
+      step %= 3;
+
+      if (step === 0) {
+        path.style.strokeDasharray = getArcLength(0, this.props) + ', ' + getArcLength(1, this.props);
+        path.style.strokeDashoffset = 0;
+        path.style.transitionDuration = '0ms';
+      } else if (step === 1) {
+        path.style.strokeDasharray = getArcLength(0.7, this.props) + ', ' + getArcLength(1, this.props);
+        path.style.strokeDashoffset = getArcLength(-0.3, this.props);
+        path.style.transitionDuration = '750ms';
+      } else {
+        path.style.strokeDasharray = getArcLength(0.7, this.props) + ', ' + getArcLength(1, this.props);
+        path.style.strokeDashoffset = getArcLength(-1, this.props);
+        path.style.transitionDuration = '850ms';
+      }
+
+      this.scalePathTimer = setTimeout(function () {
+        return _this2.scalePath(path, step + 1);
+      }, step ? 750 : 250);
+    }
+  }, {
+    key: 'rotateWrapper',
+    value: function rotateWrapper(wrapper) {
+      var _this3 = this;
+
+      if (this.props.mode !== 'indeterminate') return;
+
+      _autoPrefix2.default.set(wrapper.style, 'transform', 'rotate(0deg)');
+      _autoPrefix2.default.set(wrapper.style, 'transitionDuration', '0ms');
+
+      setTimeout(function () {
+        _autoPrefix2.default.set(wrapper.style, 'transform', 'rotate(1800deg)');
+        _autoPrefix2.default.set(wrapper.style, 'transitionDuration', '10s');
+        _autoPrefix2.default.set(wrapper.style, 'transitionTimingFunction', 'linear');
+      }, 50);
+
+      this.rotateWrapperTimer = setTimeout(function () {
+        return _this3.rotateWrapper(wrapper);
+      }, 10050);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props,
+          style = _props.style,
+          innerStyle = _props.innerStyle,
+          size = _props.size,
+          thickness = _props.thickness,
+          other = (0, _objectWithoutProperties3.default)(_props, ['style', 'innerStyle', 'size', 'thickness']);
+      var prepareStyles = this.context.muiTheme.prepareStyles;
+
+      var styles = getStyles(this.props, this.context);
+
+      return _react2.default.createElement(
+        'div',
+        (0, _extends3.default)({}, other, { style: prepareStyles((0, _simpleAssign2.default)(styles.root, style)) }),
+        _react2.default.createElement(
+          'div',
+          { ref: 'wrapper', style: prepareStyles((0, _simpleAssign2.default)(styles.wrapper, innerStyle)) },
+          _react2.default.createElement(
+            'svg',
+            {
+              viewBox: '0 0 ' + size + ' ' + size,
+              style: prepareStyles(styles.svg)
+            },
+            _react2.default.createElement('circle', {
+              ref: 'path',
+              style: prepareStyles(styles.path),
+              cx: size / 2,
+              cy: size / 2,
+              r: (size - thickness) / 2,
+              fill: 'none',
+              strokeWidth: thickness,
+              strokeMiterlimit: '20'
+            })
+          )
+        )
+      );
+    }
+  }]);
+  return CircularProgress;
+}(_react.Component);
+
+CircularProgress.defaultProps = {
+  mode: 'indeterminate',
+  value: 0,
+  min: 0,
+  max: 100,
+  size: 40,
+  thickness: 3.5
+};
+CircularProgress.contextTypes = {
+  muiTheme: _propTypes2.default.object.isRequired
+};
+CircularProgress.propTypes = process.env.NODE_ENV !== "production" ? {
+  /**
+   * Override the progress's color.
+   */
+  color: _propTypes2.default.string,
+  /**
+   * Style for inner wrapper div.
+   */
+  innerStyle: _propTypes2.default.object,
+  /**
+   * The max value of progress, only works in determinate mode.
+   */
+  max: _propTypes2.default.number,
+  /**
+   * The min value of progress, only works in determinate mode.
+   */
+  min: _propTypes2.default.number,
+  /**
+   * The mode of show your progress, indeterminate
+   * for when there is no value for progress.
+   */
+  mode: _propTypes2.default.oneOf(['determinate', 'indeterminate']),
+  /**
+   * The diameter of the progress in pixels.
+   */
+  size: _propTypes2.default.number,
+  /**
+   * Override the inline-styles of the root element.
+   */
+  style: _propTypes2.default.object,
+  /**
+   * Stroke width in pixels.
+   */
+  thickness: _propTypes2.default.number,
+  /**
+   * The value of progress, only works in determinate mode.
+   */
+  value: _propTypes2.default.number
+} : {};
+exports.default = CircularProgress;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ })
 /******/ ]);
