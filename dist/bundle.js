@@ -29784,19 +29784,25 @@ var MapPage = (function (_super) {
         };
         _this.service = props.service;
         _this.state = { open: true, isLoading: true, loadedElements: [], selectedElement: [] };
+        _this.loadView("views/unvalidated/content.geojson");
+        return _this;
+    }
+    MapPage.prototype.loadView = function (viewPath) {
         // views/bydate/[XX]months/content.geojson
-        var result = _this.props.service.loadView("views/unvalidated/content.geojson").then(function (l) {
+        var _this = this;
+        var result = this.props.service.loadView(viewPath).then(function (l) {
             var stmap = (_this.refs["mymap"]);
             // set the loaded elements
             _this.setState({ loadedElements: l, isLoading: false });
             stmap.addAllElements(l);
             stmap.setAllElements(l);
+            // zoom to all elements in layer
+            stmap.zoomToAllMarkers();
         }).catch(function (e) {
             // error in getting the result,
             _this.setState({ loadedElements: [], isLoading: false });
         });
-        return _this;
-    }
+    };
     MapPage.prototype.render = function () {
         var position = { lat: 51.505, lng: -0.09 };
         var paddingStyle = { padding: "12px" };
@@ -33341,6 +33347,11 @@ var StMap = (function (_super) {
     StMap.prototype.setSelected = function (f) {
         this.setState({ selectedElements: f });
     };
+    StMap.prototype.zoomToAllMarkers = function () {
+        var m = this.refs.map;
+        var g = this.refs.group;
+        m.leafletElement.fitBounds(g.leafletElement.getBounds());
+    };
     StMap.prototype.render = function () {
         var self = this;
         var onElementClick = function (e) {
@@ -33350,37 +33361,38 @@ var StMap = (function (_super) {
         // console.log(JSON.stringify(this.state));
         return React.createElement(react_leaflet_1.Map, { zoom: this.state.zoom, ref: "map", center: this.state.center, onzoomend: this.zoomEnd, onmoveend: this.zoomEnd },
             React.createElement(react_leaflet_1.TileLayer, { url: 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', attribution: "\u00A9 <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors" }),
-            this.state.displayedElements.map(function (element) {
-                // create icon associated to the point
-                var i = new Leaflet.Icon({
-                    iconUrl: element.content.properties['imageURL'],
-                    iconSize: Leaflet.point(40, 40)
-                });
-                // place the marker
-                return React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, icon: i, opacity: 0.6 });
-            }),
-            this.state.selectedElements.map(function (element) {
-                // place the selected marker
-                var i = new Leaflet.Icon({
-                    iconUrl: element.content.properties['imageURL'],
-                    iconSize: Leaflet.point(20, 20),
-                    iconAnchor: Leaflet.point(10, 10)
-                });
-                var currentElement = element;
-                var changePosition = function (e) {
-                    var t = e.target;
-                    var l = t.getLatLng();
-                    currentElement.content.geometry.coordinates[1] = l.lat;
-                    currentElement.content.geometry.coordinates[0] = l.lng;
-                    // save !!
-                    if (self.saveElementCB) {
-                        self.saveElementCB(currentElement);
-                    }
-                };
-                return [React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, icon: i, zIndexOffset: 1001 }),
-                    React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, zIndexOffset: 1000, draggable: true, ondragend: changePosition })
-                ];
-            }));
+            React.createElement(react_leaflet_1.FeatureGroup, { ref: "group" },
+                this.state.displayedElements.map(function (element) {
+                    // create icon associated to the point
+                    var i = new Leaflet.Icon({
+                        iconUrl: element.content.properties['imageURL'],
+                        iconSize: Leaflet.point(40, 40)
+                    });
+                    // place the marker
+                    return React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, icon: i, opacity: 0.6 });
+                }),
+                this.state.selectedElements.map(function (element) {
+                    // place the selected marker
+                    var i = new Leaflet.Icon({
+                        iconUrl: element.content.properties['imageURL'],
+                        iconSize: Leaflet.point(20, 20),
+                        iconAnchor: Leaflet.point(10, 10)
+                    });
+                    var currentElement = element;
+                    var changePosition = function (e) {
+                        var t = e.target;
+                        var l = t.getLatLng();
+                        currentElement.content.geometry.coordinates[1] = l.lat;
+                        currentElement.content.geometry.coordinates[0] = l.lng;
+                        // save !!
+                        if (self.saveElementCB) {
+                            self.saveElementCB(currentElement);
+                        }
+                    };
+                    return [React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, icon: i, zIndexOffset: 1001 }),
+                        React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, zIndexOffset: 1000, draggable: true, ondragend: changePosition })
+                    ];
+                })));
     };
     ;
     return StMap;

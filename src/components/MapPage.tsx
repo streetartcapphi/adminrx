@@ -43,23 +43,33 @@ export interface MapPageProps {
     this.service = props.service;
     this.state = {open: true,isLoading : true, loadedElements:[], selectedElement : []};
 
- // views/bydate/[XX]months/content.geojson
-
-  let result = this.props.service.loadView("views/unvalidated/content.geojson").then( (l) => {
-
-       var stmap : StMap = (this.refs["mymap"]) as StMap;
-
-       // set the loaded elements
-       this.setState({loadedElements:l, isLoading:false})
-       stmap.addAllElements(l);
-       stmap.setAllElements(l);
-
-     }).catch((e) => {
-       // error in getting the result,
-       this.setState({loadedElements : [] ,isLoading:false })
-     }) ;
-
+    this.loadView("views/unvalidated/content.geojson");
   }
+
+
+ public loadView(viewPath : string) : void {
+   // views/bydate/[XX]months/content.geojson
+
+      let result = this.props.service.loadView(viewPath).then( (l) => {
+
+         var stmap : StMap = (this.refs["mymap"]) as StMap;
+
+         // set the loaded elements
+         this.setState({loadedElements:l, isLoading:false})
+         stmap.addAllElements(l);
+         stmap.setAllElements(l);
+
+         // zoom to all elements in layer
+
+         stmap.zoomToAllMarkers();
+
+       }).catch((e) => {
+         // error in getting the result,
+         this.setState({loadedElements : [] ,isLoading:false })
+       }) ;
+
+ }
+
 
   handleToggle = () => this.setState({open: !this.state.open});
   //

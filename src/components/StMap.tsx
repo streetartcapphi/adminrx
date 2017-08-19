@@ -2,7 +2,7 @@ import * as React from "react";
 import { render } from 'react-dom';
 
 import * as Leaflet from 'leaflet';
-import { Map, Marker, MarkerProps, Popup, TileLayer } from 'react-leaflet';
+import { Map, Marker, MarkerProps, Popup, TileLayer, FeatureGroup } from 'react-leaflet';
 
 import {ViewModelElement} from '../services/StreetElementService';
 
@@ -72,6 +72,15 @@ export class StMap extends React.Component<StMapProps, StMapState> {
      this.setState( {selectedElements : f});
    }
 
+   public zoomToAllMarkers() : void {
+
+      var m : Map = this.refs.map as Map;
+      var g : FeatureGroup = this.refs.group as FeatureGroup;
+
+      (m.leafletElement as any).fitBounds((g.leafletElement as any).getBounds());
+
+   }
+
   //  public zoomToElement(f : GeoJSON.Feature<GeoJSON.Point>) : void {
   //     this.setState({ displayedElements: [].concat(this.state.displayedElements), center: [f.geometry.coordinates[1],f.geometry.coordinates[0] ] });
   //  }
@@ -122,6 +131,8 @@ export class StMap extends React.Component<StMapProps, StMapState> {
             url='http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png'
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           />
+
+          <FeatureGroup ref="group">
           {this.state.displayedElements.map(function(element) {
               // create icon associated to the point
               let i = new Leaflet.Icon({
@@ -175,6 +186,8 @@ export class StMap extends React.Component<StMapProps, StMapState> {
                       ]
           })}
 
+
+         </FeatureGroup>
 
         </Map>
 
