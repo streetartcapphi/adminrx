@@ -29806,7 +29806,9 @@ var MapPage = (function (_super) {
             stmap.setAllElements(l);
             // zoom to all elements in layer
             try {
-                stmap.zoomToAllMarkers();
+                if (l.length > 1) {
+                    stmap.zoomToAllMarkers();
+                }
             }
             catch (e) {
             }
@@ -33409,7 +33411,11 @@ var StMap = (function (_super) {
                         iconSize: Leaflet.point(40, 40)
                     });
                     // place the marker
-                    return React.createElement(react_leaflet_1.Marker, { position: [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0]], onclick: onElementClick, icon: i, opacity: 0.6 });
+                    var geom = element.content.geometry;
+                    if (typeof geom == undefined) {
+                        return [];
+                    }
+                    return React.createElement(react_leaflet_1.Marker, { position: [geom.coordinates[1], geom.coordinates[0]], onclick: onElementClick, icon: i, opacity: 0.6 });
                 }),
                 this.state.selectedElements.map(function (element) {
                     // place the selected marker
@@ -39727,7 +39733,7 @@ var StItem = (function (_super) {
         //
         return React.createElement(Card_1.Card, __assign({ expanded: this.state.expanded, onExpandChange: handleExpandChange }, { onClick: function () { return handleClick(_this); } }),
             React.createElement(Card_1.CardHeader, { actAsExpander: true, showExpandableButton: true, title: mv.properties['instagramid'], subtitle: mv.properties['author'], expandable: false, avatar: mv.properties['imageURL'] }),
-            React.createElement(Card_1.CardMedia, { expandable: true, overlay: React.createElement(Card_1.CardTitle, { title: this.formatDate(new Date(mv.properties['timestamp'] * 1000)), subtitle: "Overlay subtitle" }) },
+            React.createElement(Card_1.CardMedia, { expandable: true, overlay: React.createElement(Card_1.CardTitle, { title: this.formatDate(new Date(mv.properties['post_date'])), subtitle: "Overlay subtitle" }) },
                 React.createElement("img", { src: mv.properties['imageURL'], alt: "" })),
             React.createElement(Card_1.CardText, { expandable: true }, mv.properties['caption']),
             React.createElement(Card_1.CardActions, { expandable: false },

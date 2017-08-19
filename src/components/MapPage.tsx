@@ -65,7 +65,9 @@ export interface MapPageProps {
 
          // zoom to all elements in layer
         try {
+               if (l.length > 1)  {
                  stmap.zoomToAllMarkers();
+              }
         } catch(e) {
 
         }

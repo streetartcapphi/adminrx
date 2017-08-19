@@ -140,7 +140,12 @@ export class StMap extends React.Component<StMapProps, StMapState> {
                  iconSize: Leaflet.point(40,40)
               } as Leaflet.IconOptions);
               // place the marker
-              return <Marker position={ [element.content.geometry.coordinates[1], element.content.geometry.coordinates[0] ] }
+
+              let geom = element.content.geometry;
+              if (typeof geom == undefined) {
+                return [];
+              }
+              return <Marker position={ [geom.coordinates[1], geom.coordinates[0] ] }
                         onclick={onElementClick}
                         icon={i}
                         opacity={0.6}

@@ -125,7 +125,7 @@ let toggleNotPublished = (e) => {
 
             <CardMedia
               expandable={true}
-              overlay={<CardTitle title={this.formatDate(new Date(mv.properties['timestamp']*1000))} subtitle="Overlay subtitle" />}>
+              overlay={<CardTitle title={this.formatDate(new Date(mv.properties['post_date']))} subtitle="Overlay subtitle" />}>
                <img src={mv.properties['imageURL']} alt=""  />
 
             </CardMedia>
