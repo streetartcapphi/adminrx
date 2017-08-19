@@ -120,7 +120,7 @@ export class StreetElementService {
                  relativePath = resultat[1];
               }
 
-              if (relativePath == null) {
+              if (relativePath === null) {
                  console.log("construct relative path from elements");
 
                  let d = new Date(e.properties.post_date);
@@ -147,8 +147,11 @@ export class StreetElementService {
                   day = "0" + day;
                 }
 
-                 relativePath = "input/" + folder + "/" +  (d.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
-
+                if (typeof id == 'undefined') {
+                  console.warn("no id for element " + JSON.stringify(e) + " will not be added");
+                } else {
+                  relativePath = "input/" + folder + "/" +  (d.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
+                }
               }
 
               let closedRelativePath = relativePath;

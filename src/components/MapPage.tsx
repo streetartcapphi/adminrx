@@ -141,6 +141,7 @@ export interface MapPageProps {
                   this.loadView("views/unvalidated/content.geojson")
 
           } } label={"Non validé"} primary={true} />
+
           <FlatButton onClick={ (e) => {
              var stmap : StMap = (this.refs["mymap"]) as StMap;
              stmap.addAllElements([]);
@@ -148,7 +149,7 @@ export interface MapPageProps {
              this.setState({loadedElements:[],isLoading:true});
              this.loadView("views/cumulbydate/1weeks/content.geojson");
 
-           } } label={"Dernière semaine"} primary={true} />
+           } } label={"Validés Dernière semaine"} primary={true} />
 
          <FlatButton onClick={ (e) => {
             var stmap : StMap = (this.refs["mymap"]) as StMap;
@@ -157,7 +158,7 @@ export interface MapPageProps {
             this.setState({loadedElements:[],isLoading:true});
             this.loadView("views/cumulbydate/1months/content.geojson");
 
-          } } label={"Mois courant"} primary={true} />
+          } } label={"Validé Mois courant"} primary={true} />
 
         </div>
          <StMap ref="mymap" center={position} onElements={this.visibleElementsChanged} onSaveElement={this.saveElement} />

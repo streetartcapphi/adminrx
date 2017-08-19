@@ -29837,14 +29837,14 @@ var MapPage = (function (_super) {
                         stmap.setAllElements([]);
                         _this.setState({ loadedElements: [], isLoading: true });
                         _this.loadView("views/cumulbydate/1weeks/content.geojson");
-                    }, label: "Dernière semaine", primary: true }),
+                    }, label: "Validés Dernière semaine", primary: true }),
                 React.createElement(FlatButton_1.default, { onClick: function (e) {
                         var stmap = (_this.refs["mymap"]);
                         stmap.addAllElements([]);
                         stmap.setAllElements([]);
                         _this.setState({ loadedElements: [], isLoading: true });
                         _this.loadView("views/cumulbydate/1months/content.geojson");
-                    }, label: "Mois courant", primary: true })),
+                    }, label: "Validé Mois courant", primary: true })),
             React.createElement(StMap_1.StMap, { ref: "mymap", center: position, onElements: this.visibleElementsChanged, onSaveElement: this.saveElement }),
             React.createElement(Drawer_1.default, { width: 400, openSecondary: true, open: this.state.open },
                 React.createElement(AppBar_1.default, { title: "Vue" }),
@@ -39672,8 +39672,15 @@ var StItem = (function (_super) {
     function StItem(props) {
         var _this = _super.call(this, props) || this;
         _this.savedCallBack = _this.props.onSaveElement;
-        var b = (props.item.content.properties['mustbepublished'] === true && props.item.content.properties['validated'] === true);
-        var c = props.item.content.properties['mustbepublished'] === false && props.item.content.properties['validated'] === true;
+        var currentItem = props.item;
+        if (currentItem.content.properties['mustbepublished'] === "false") {
+            currentItem.content.properties['mustbepublished'] = false;
+        }
+        if (currentItem.content.properties['validated'] === "false") {
+            currentItem.content.properties['validated'] = false;
+        }
+        var b = (currentItem.content.properties['mustbepublished'] && currentItem.content.properties['validated']);
+        var c = (!currentItem.content.properties['mustbepublished']) && currentItem.content.properties['validated'];
         _this.state = {
             expanded: true,
             published: b,
@@ -39759,7 +39766,8 @@ var ItemsList = (function (_super) {
         };
         var t = this;
         return React.createElement("div", null, this.props.displayList.map(function (listValue) {
-            return React.createElement(StItem, { item: listValue, onClicked: onElementClick, onSaveElement: t.saveCB });
+            var lv = listValue;
+            return React.createElement(StItem, { item: lv, key: lv.content.id, onClicked: onElementClick, onSaveElement: t.saveCB });
         }));
     };
     return ItemsList;
@@ -47283,7 +47291,7 @@ var StreetElementService = (function () {
                     }
                     relativePath = resultat[1];
                 }
-                if (relativePath == null) {
+                if (relativePath === null) {
                     console.log("construct relative path from elements");
                     var d_1 = new Date(e.properties.post_date);
                     console.log("post date :");
@@ -47304,7 +47312,12 @@ var StreetElementService = (function () {
                     if (day.length < 2) {
                         day = "0" + day;
                     }
-                    relativePath = "input/" + folder + "/" + (d_1.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
+                    if (typeof id == 'undefined') {
+                        console.warn("no id for element " + JSON.stringify(e) + " will not be added");
+                    }
+                    else {
+                        relativePath = "input/" + folder + "/" + (d_1.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
+                    }
                 }
                 var closedRelativePath = relativePath;
                 if (closedRelativePath != null) {

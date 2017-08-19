@@ -35,9 +35,17 @@ export class StItem extends React.Component<ItemProps,ItemState> {
   constructor(props : ItemProps) {
     super(props);
     this.savedCallBack = this.props.onSaveElement;
+    var currentItem : ViewModelElement = props.item;
+    if (currentItem.content.properties['mustbepublished'] === "false") {
+      currentItem.content.properties['mustbepublished'] = false;
+    }
+    if (currentItem.content.properties['validated'] === "false") {
+      currentItem.content.properties['validated'] = false;
+    }
 
-    var b : boolean = (props.item.content.properties['mustbepublished'] === true && props.item.content.properties['validated'] === true);
-    var c : boolean = props.item.content.properties['mustbepublished'] === false && props.item.content.properties['validated'] === true ;
+
+    var b : boolean = (currentItem.content.properties['mustbepublished']  && currentItem.content.properties['validated'];
+    var c : boolean = (!currentItem.content.properties['mustbepublished'])  && currentItem.content.properties['validated'];
 
     this.state = {
       expanded : true,
@@ -185,7 +193,8 @@ export class ItemsList extends React.Component<ItemsListProp, any> {
 
           return   <div >
                  {this.props.displayList.map(function(listValue){
-                    return  <StItem item={listValue} onClicked={onElementClick} onSaveElement={t.saveCB}/>
+                    let lv = listValue;
+                    return  <StItem item={lv} key={lv.content.id} onClicked={onElementClick} onSaveElement={t.saveCB}/>
 
                  })}
         </div>
