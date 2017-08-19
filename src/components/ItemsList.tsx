@@ -36,13 +36,21 @@ export class StItem extends React.Component<ItemProps,ItemState> {
     super(props);
     this.savedCallBack = this.props.onSaveElement;
     var currentItem : ViewModelElement = props.item;
-    if (currentItem.content.properties['mustbepublished'] === "false") {
-      currentItem.content.properties['mustbepublished'] = false;
-    }
-    if (currentItem.content.properties['validated'] === "false") {
-      currentItem.content.properties['validated'] = false;
+    if (typeof currentItem.content.properties['mustbepublished'] === 'string') {
+      if (currentItem.content.properties['mustbepublished'] === "false") {
+        currentItem.content.properties['mustbepublished'] = false;
+      } else {
+        currentItem.content.properties['mustbepublished'] = true;
+      }
     }
 
+    if (typeof currentItem.content.properties['validated'] === 'string') {
+      if (currentItem.content.properties['validated'] === "false") {
+        currentItem.content.properties['validated'] = false;
+      } else {
+        currentItem.content.properties['validated'] = true;
+      }
+    }
 
     var b : boolean = (currentItem.content.properties['mustbepublished']  && currentItem.content.properties['validated'];
     var c : boolean = (!currentItem.content.properties['mustbepublished'])  && currentItem.content.properties['validated'];

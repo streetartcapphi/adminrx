@@ -143,6 +143,16 @@ export interface MapPageProps {
           } } label={"Non validé"} primary={true} />
 
           <FlatButton onClick={ (e) => {
+                   var stmap : StMap = (this.refs["mymap"]) as StMap;
+                   stmap.addAllElements([]);
+                   stmap.setAllElements([]);
+                   this.setState({loadedElements:[], isLoading:true});
+                   this.loadView("views/cumulbydate/2months/content.geojson")
+
+           } } label={"Visu Site (deux mois) validé"} primary={true} />
+
+
+          <FlatButton onClick={ (e) => {
              var stmap : StMap = (this.refs["mymap"]) as StMap;
              stmap.addAllElements([]);
              stmap.setAllElements([]);

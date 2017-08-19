@@ -29836,6 +29836,13 @@ var MapPage = (function (_super) {
                         stmap.addAllElements([]);
                         stmap.setAllElements([]);
                         _this.setState({ loadedElements: [], isLoading: true });
+                        _this.loadView("views/cumulbydate/2months/content.geojson");
+                    }, label: "Visu Site (deux mois) validé", primary: true }),
+                React.createElement(FlatButton_1.default, { onClick: function (e) {
+                        var stmap = (_this.refs["mymap"]);
+                        stmap.addAllElements([]);
+                        stmap.setAllElements([]);
+                        _this.setState({ loadedElements: [], isLoading: true });
                         _this.loadView("views/cumulbydate/1weeks/content.geojson");
                     }, label: "Validés Dernière semaine", primary: true }),
                 React.createElement(FlatButton_1.default, { onClick: function (e) {
@@ -39673,11 +39680,21 @@ var StItem = (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.savedCallBack = _this.props.onSaveElement;
         var currentItem = props.item;
-        if (currentItem.content.properties['mustbepublished'] === "false") {
-            currentItem.content.properties['mustbepublished'] = false;
+        if (typeof currentItem.content.properties['mustbepublished'] === 'string') {
+            if (currentItem.content.properties['mustbepublished'] === "false") {
+                currentItem.content.properties['mustbepublished'] = false;
+            }
+            else {
+                currentItem.content.properties['mustbepublished'] = true;
+            }
         }
-        if (currentItem.content.properties['validated'] === "false") {
-            currentItem.content.properties['validated'] = false;
+        if (typeof currentItem.content.properties['validated'] === 'string') {
+            if (currentItem.content.properties['validated'] === "false") {
+                currentItem.content.properties['validated'] = false;
+            }
+            else {
+                currentItem.content.properties['validated'] = true;
+            }
         }
         var b = (currentItem.content.properties['mustbepublished'] && currentItem.content.properties['validated']);
         var c = (!currentItem.content.properties['mustbepublished']) && currentItem.content.properties['validated'];
