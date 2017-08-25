@@ -3,10 +3,16 @@
 
 import {Deferred} from "ts-deferred";
 
+import {factory} from "../LogConfig";
+
+
+const log = factory.getLogger("services.streetelementservice");
+const WORKING_REPO = "streetartcapphi";
+
+
 declare var GitHub : any;
 
 export type Function_CB<T> = (err : any, res: T) => void;
-
 
 export interface SHAResponse {
     name:string;
@@ -44,8 +50,8 @@ export class StreetElementService {
           */
       });
 
-      this.repo = this.gh.getRepo("streetartcapphi", "locations");
-      console.debug("repository :" + JSON.stringify(this.repo));
+      this.repo = this.gh.getRepo(WORKING_REPO, "locations");
+      log.debug("repository :" + JSON.stringify(this.repo));
     }
 
     public isConnected() : boolean {
@@ -60,14 +66,13 @@ export class StreetElementService {
 
     public listFiles(folder:string, cb:Function_CB<Array<SHAResponse>>) {
       this.checkAuth();
-      console.log("sending request");
+      log.debug("sending request");
       this.repo.getSha(this.branch, "", (r:any,t:Array<SHAResponse>) => {
-        console.log("sha response:" + JSON.stringify(t));
+        log.debug("sha response:" + JSON.stringify(t));
         for (var e of t) {
-          console.log(e);
+          log.debug(JSON.stringify(e));
         }
         cb(r,t);
-        // this.repo.getTree()
       });
 
     }
@@ -79,7 +84,7 @@ export class StreetElementService {
 
         // load view
         this.repo.getContents(this.branch,viewPath, true, (r:any,t:any) => {
-           console.log("response received");
+           log.debug("response received");
             if (r) {
 
               d.reject("error in getting view " + viewPath + " :" + JSON.stringify(r));
@@ -87,26 +92,26 @@ export class StreetElementService {
             }
 
             var a : Array<ViewModelElement> = [];
-            console.log("get all elements ");
+            log.debug("get all elements ");
 
             let allDeferred : Array<Promise<GeoJSONFeatureCollection<GeoJSON.Point>>> = [];
 
               // get all elements and input path
             for(var el of t.features) {
                let e = el;
-               console.log("view element " + JSON.stringify(e));
+               log.debug("view element " + JSON.stringify(e));
                let editurl = e.properties.editURL;
 
                var relativePath = null;
 
                if (editurl) {
-                 console.log("get the relative url");
+                 log.debug("get the relative url");
                  var r :any =  /.*(input.*\.json)/g;
                  var resultat = r.exec(editurl);
                  if (resultat) {
-                      console.log("matched :" + JSON.stringify(resultat));
+                      log.debug("matched :" + JSON.stringify(resultat));
                  } else {
-                     console.log("fail to extract relativeurl from " + editurl);
+                     log.debug("fail to extract relativeurl from " + editurl);
                      // try ggeojson
                      r =  /.*(input.*\.geojson)/g;
                      resultat = r.exec(editurl);
@@ -121,11 +126,11 @@ export class StreetElementService {
               }
 
               if (relativePath === null) {
-                 console.log("construct relative path from elements");
+                 log.debug("construct relative path from elements");
 
                  let d = new Date(e.properties.post_date);
-                 console.log("post date :");
-                 console.log(d);
+                 log.debug("post date :");
+                 log.debug(JSON.stringify(d));
                  let id = e.properties.id;
                  let author = e.properties.author;
 
@@ -148,7 +153,7 @@ export class StreetElementService {
                 }
 
                 if (typeof id == 'undefined') {
-                  console.warn("no id for element " + JSON.stringify(e) + " will not be added");
+                  log.warn("no id for element " + JSON.stringify(e) + " will not be added");
                 } else {
                   relativePath = "input/" + folder + "/" +  (d.getUTCFullYear()) + "-" + month + "-" + day + "/" + id + suffix;
                 }
@@ -160,39 +165,38 @@ export class StreetElementService {
 
                  let id = e.properties.id;
 
-                 console.log("extract elements from " + closedRelativePath);
+                 log.debug("extract elements from " + closedRelativePath);
                  let dp = new Deferred<GeoJSONFeatureCollection<GeoJSON.Point>>();
                  let pro = dp.promise;
 
                  allDeferred.push(pro);
 
                  pro.then( (elements:GeoJSONFeatureCollection<GeoJSON.Point>)  => {
-                    console.log("promise resolved "+pro);
+                    log.debug("promise resolved "+pro);
                     if (elements.features) {
-                       console.log("adding element :");
-                       console.log(elements.features[0]);
+                       log.debug("adding element :");
+                       log.debug(JSON.stringify(elements.features[0]));
                        a.push({ content : elements.features[0], filePath:closedRelativePath, id:id} as ViewModelElement);
                     }
                   }).catch( (e) => {
-                         console.log("remove the element, error from server :" + JSON.stringify(e));
+                         log.warn("remove the element, error from server :" + JSON.stringify(e));
                   })
 
                  var contentPromise : Promise<any> = this.repo.getContents(this.branch,closedRelativePath,true);
 
                  contentPromise.then( (t) => {
-                   console.log("content resolved for " + dp);
-                   console.log(t);
+                   log.debug("content resolved for " + dp);
+                   log.debug(JSON.stringify(t));
                    if (t.data) {
                      dp.resolve(t.data);
-
                    } else {
-                     console.error(t);
+                     log.error(t);
                      dp.reject("error in getting element " + closedRelativePath);
                    }
-                       console.log("resolved call ");
+                       log.debug("resolved call ");
 
                  }).catch( (r)=> {
-                   console.error("content for " + closedRelativePath + " errored");
+                   log.error("content for " + closedRelativePath + " errored");
                    dp.reject("error in getting content for :" + JSON.stringify(r));
                  });
 
@@ -204,8 +208,8 @@ export class StreetElementService {
             } // for
 
             Promise.all(allDeferred.map(p => p.catch(() => undefined))).then( () => {
-              console.log("all promise finished");
-              console.log(a);
+              log.debug("all promise finished");
+              log.debug(JSON.stringify(a));
               d.resolve(a);
             });
 
@@ -218,10 +222,10 @@ export class StreetElementService {
 
     public loadPositions(filePath:string, cb:Function_CB<GeoJSONFeatureCollection<GeoJSON.Point>>) {
        this.checkAuth();
-       console.debug("launch get contents");
+       log.debug("launch get contents");
        this.repo.getContents(this.branch,filePath, true, (r:any,t:any) => {
-         console.debug("error returned :" + r);
-         console.debug("result :" + JSON.stringify(t));
+         log.debug("error returned :" + r);
+         log.debug("result :" + JSON.stringify(t));
          cb(r, t );
        });
     }
@@ -259,11 +263,10 @@ export class StreetElementService {
       }
 
       this.repo.writeFile(this.branch, filePath, content_sent, "initial message",(r:any,t:any) => {
-        console.debug("error returned :" + r);
-        console.debug("result :" + JSON.stringify(t));
-        console.debug("executed, call callback");
+        log.debug("error returned :" + r);
+        log.debug("result :" + JSON.stringify(t));
+        log.debug("executed, call callback");
         cb(r, t );
-
       });
     }
 
