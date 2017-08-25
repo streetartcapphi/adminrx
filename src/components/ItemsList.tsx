@@ -3,75 +3,78 @@ import * as React from 'react';
 import { render } from 'react-dom';
 
 
-import {List, ListItem} from 'material-ui/List';
+import { List, ListItem } from 'material-ui/List';
 import FlatButton from 'material-ui/FlatButton';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card';
 import Toggle from 'material-ui/Toggle';
 
 
 /// <reference path="geojson.d.ts"/>
 
 
-import {ViewModelElement} from '../services/StreetElementService';
+import { ViewModelElement } from '../services/StreetElementService';
 
 
 export interface ItemProps {
-    item : ViewModelElement;
-    onClicked : (element) => void;
-    onSaveElement : (e:ViewModelElement) => void;
+  item: ViewModelElement;
+  onClicked: (element) => void;
+  onSaveElement: (e: ViewModelElement) => void;
 }
 
 export interface ItemState {
-    expanded : boolean;
-    published : boolean;
-    notpublished : boolean;
+  expanded: boolean;
+  published: boolean;
+  notpublished: boolean;
 }
 
 
-export class StItem extends React.Component<ItemProps,ItemState> {
+export class StItem extends React.Component<ItemProps, ItemState> {
 
-  private savedCallBack :(e : ViewModelElement) => void;
+  private savedCallBack: (e: ViewModelElement) => void;
 
-  constructor(props : ItemProps) {
+  constructor(props: ItemProps) {
     super(props);
     this.savedCallBack = this.props.onSaveElement;
-    var currentItem : ViewModelElement = props.item;
-    if (typeof currentItem.content.properties['mustbepublished'] === 'string') {
-      if (currentItem.content.properties['mustbepublished'] === "false") {
-        currentItem.content.properties['mustbepublished'] = false;
+    var currentItem: ViewModelElement = props.item;
+    var itemContent = currentItem.content;
+
+
+    if (typeof itemContent.properties['mustbepublished'] === 'string') {
+      if (itemContent.properties['mustbepublished'] === "false") {
+        itemContent.properties['mustbepublished'] = false;
       } else {
-        currentItem.content.properties['mustbepublished'] = true;
+        itemContent.properties['mustbepublished'] = true;
       }
     }
 
-    if (typeof currentItem.content.properties['validated'] === 'string') {
-      if (currentItem.content.properties['validated'] === "false") {
-        currentItem.content.properties['validated'] = false;
+    if (typeof itemContent.properties['validated'] === 'string') {
+      if (itemContent.properties['validated'] === "false") {
+        itemContent.properties['validated'] = false;
       } else {
-        currentItem.content.properties['validated'] = true;
+        itemContent.properties['validated'] = true;
       }
     }
 
-    var b : boolean = (currentItem.content.properties['mustbepublished']  && currentItem.content.properties['validated'];
-    var c : boolean = (!currentItem.content.properties['mustbepublished'])  && currentItem.content.properties['validated'];
+    var b: boolean = itemContent.properties['mustbepublished'] && itemContent.properties['validated'];
+    var c: boolean = (!itemContent.properties['mustbepublished']) && itemContent.properties['validated'];
 
     this.state = {
-      expanded : true,
-      published : b ,
-      notpublished : c
+      expanded: true,
+      published: b,
+      notpublished: c
     };
 
   }
 
-  private stateToElement(p : boolean, n : boolean) : void {
+  private stateToElement(p: boolean, n: boolean): void {
     this.props.item.content.properties['mustbepublished'] = p;
     this.props.item.content.properties['validated'] = p || n;
-    this.setState({published : p, notpublished : n})
+    this.setState({ published: p, notpublished: n })
 
   }
 
 
-  private formatDate(date : Date) {
+  private formatDate(date: Date) {
     var monthNames = [
       "Janvier", "Février", "Mars",
       "Avril", "Mai", "Juin", "Juillet",
@@ -89,75 +92,75 @@ export class StItem extends React.Component<ItemProps,ItemState> {
 
   render() {
     let t = this;
-    let handleExpandChange = (expanded : boolean) => {
+    let handleExpandChange = (expanded: boolean) => {
       console.log("item pushed :" + expanded);
-        t.setState({expanded: expanded});
+      t.setState({ expanded: expanded });
     };
 
     let handleExpand = () => {
       console.log("expand");
-     t.setState({expanded: true});
-   };
+      t.setState({ expanded: true });
+    };
 
- let handleReduce = () => {
-   console.log("reduce");
-   t.setState({expanded: false});
- };
- let toggle = () => {
-   t.setState({expanded : !t.state.expanded});
- }
+    let handleReduce = () => {
+      console.log("reduce");
+      t.setState({ expanded: false });
+    };
+    let toggle = () => {
+      t.setState({ expanded: !t.state.expanded });
+    }
 
 
- let handleClick = (e) => {
-   console.log("hello");
-    this.props.onClicked(this);
- }
+    let handleClick = (e) => {
+      console.log("hello");
+      this.props.onClicked(this);
+    }
 
-let togglePublished = (e) => {
-  t.stateToElement(!t.state.published, false );
-  t.savedCallBack(t.props.item);
-}
+    let togglePublished = (e) => {
+      t.stateToElement(!t.state.published, false);
+      t.savedCallBack(t.props.item);
+    }
 
-let toggleNotPublished = (e) => {
-   t.stateToElement( false, !t.state.notpublished);
-   t.savedCallBack(t.props.item);
-}
+    let toggleNotPublished = (e) => {
+      t.stateToElement(false, !t.state.notpublished);
+      t.savedCallBack(t.props.item);
+    }
 
 
 
     let mv = this.props.item.content;
 
 
-//   <span {...{onClick: () => handleClick(this)} as {}}>
+    //   <span {...{onClick: () => handleClick(this)} as {}}>
 
     //
-    return   <Card  expanded={this.state.expanded} onExpandChange={handleExpandChange}  {...{onClick: () => handleClick(this)} as {}} >
+    return <Card expanded={this.state.expanded} onExpandChange={handleExpandChange}  {...{ onClick: () => handleClick(this) } as {}} >
 
-            <CardHeader actAsExpander={true} showExpandableButton={true}
-                title={mv.properties['instagramid']}
-                subtitle={mv.properties['author']} expandable={false}
-                avatar={mv.properties['imageURL']}
-                 />
+      <CardHeader actAsExpander={true} showExpandableButton={true}
+        title={mv.properties['instagramid']}
+        subtitle={mv.properties['author']} expandable={false}
+        avatar={mv.properties['imageURL']}
+      />
 
-            <CardMedia
-              expandable={true}
-              overlay={<CardTitle title={this.formatDate(new Date(mv.properties['post_date']))} subtitle="Overlay subtitle" />}>
-               <img src={mv.properties['imageURL']} alt=""  />
+      <CardMedia
+        expandable={true}
+        overlay={<CardTitle title={this.formatDate(new Date(mv.properties['post_date']))} subtitle="Overlay subtitle" />}>
+        <img src={mv.properties['imageURL']} alt="" />
 
-            </CardMedia>
+      </CardMedia>
 
-            <CardText expandable={true} >
-               {mv.properties['caption']}
-            </CardText>
+      <CardText expandable={true} >
+        {mv.properties['caption']}
+      </CardText>
 
-            <CardActions expandable={false}>
-              <Toggle label="Publie" toggled={this.state.published} onToggle={togglePublished}/>
-              <Toggle label="Non Publie" toggled={this.state.notpublished} onToggle={toggleNotPublished}/>
+      <CardActions expandable={false}>
+        <Toggle label="Publie" toggled={this.state.published} onToggle={togglePublished} />
+        <Toggle label="Non Publie" toggled={this.state.notpublished} onToggle={toggleNotPublished} />
 
-            </CardActions>
+      </CardActions>
 
 
-       </Card>
+    </Card>
 
 
   }
@@ -172,17 +175,17 @@ let toggleNotPublished = (e) => {
 // items
 
 export interface ItemsListProp {
-    displayList : Array<any>;
-    selectedElement : (i :StItem) => void;
-    onSaveElement : (e:ViewModelElement) => void;
+  displayList: Array<any>;
+  selectedElement: (i: StItem) => void;
+  onSaveElement: (e: ViewModelElement) => void;
 }
 
 
 export class ItemsList extends React.Component<ItemsListProp, any> {
 
-  private saveCB : (e:ViewModelElement) => void;
+  private saveCB: (e: ViewModelElement) => void;
 
-  constructor(props:ItemsListProp) {
+  constructor(props: ItemsListProp) {
     super(props);
     this.saveCB = props.onSaveElement;
 
@@ -191,21 +194,21 @@ export class ItemsList extends React.Component<ItemsListProp, any> {
 
   render() {
 
-            let onElementClick = (i:StItem) => {
-               if (this.props.selectedElement) {
-                 this.props.selectedElement(i);
-               }
-          }
+    let onElementClick = (i: StItem) => {
+      if (this.props.selectedElement) {
+        this.props.selectedElement(i);
+      }
+    }
 
-          let t = this;
+    let t = this;
 
-          return   <div >
-                 {this.props.displayList.map(function(listValue){
-                    let lv = listValue;
-                    return  <StItem item={lv} key={lv.content.id} onClicked={onElementClick} onSaveElement={t.saveCB}/>
+    return <div >
+      {this.props.displayList.map(function (listValue) {
+        let lv = listValue;
+        return <StItem item={lv} key={lv.content.id} onClicked={onElementClick} onSaveElement={t.saveCB} />
 
-                 })}
-        </div>
+      })}
+    </div>
 
   }
 

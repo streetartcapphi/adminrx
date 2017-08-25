@@ -29,8 +29,6 @@ let s = new Street.StreetElementService();
 injectTapEventPlugin();
 
 
-
-
 ReactDOM.render(<HashRouter>
     <Switch>
     <Route exact={true} path="/" component={(props) =>

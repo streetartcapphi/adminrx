@@ -75,7 +75,7 @@ export class StreetElementService {
 
     public loadView(viewPath : string) : Promise<Array<ViewModelElement>>{
 
-       let d = new Deferred();
+       let d = new Deferred<ViewModelElement[]>();
 
         // load view
         this.repo.getContents(this.branch,viewPath, true, (r:any,t:any) => {
@@ -219,7 +219,6 @@ export class StreetElementService {
     public loadPositions(filePath:string, cb:Function_CB<GeoJSONFeatureCollection<GeoJSON.Point>>) {
        this.checkAuth();
        console.debug("launch get contents");
-
        this.repo.getContents(this.branch,filePath, true, (r:any,t:any) => {
          console.debug("error returned :" + r);
          console.debug("result :" + JSON.stringify(t));
@@ -229,7 +228,7 @@ export class StreetElementService {
 
     public saveAlonePosition(e:ViewModelElement, reason : string) : Promise<string> {
 
-      var d = new Deferred();
+      var d = new Deferred<string>();
 
       if (!reason) {
         reason = "Modifications";
