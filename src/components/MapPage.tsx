@@ -62,6 +62,7 @@ export class MapPage extends React.Component<MapPageProps, MapPageState> {
 
       stmap.addAllElements(l);
       stmap.setAllElements(l);
+      stmap.setSelected([]);
 
       // zoom to all elements in layer
       try {
@@ -152,11 +153,11 @@ export class MapPage extends React.Component<MapPageProps, MapPageState> {
 
       <div>
         {Object.keys(this.views).map((s: string) => {
-
           return <FlatButton onClick={(e) => {
             var stmap: StMap = (this.refs["mymap"]) as StMap;
             stmap.addAllElements([]);
             stmap.setAllElements([]);
+            stmap.setSelected([]); // clear selection
             this.setState({ loadedElements: [], isLoading: true });
             this.loadView(this.views[s]);
           }} label={s} primary={true} />
@@ -174,7 +175,7 @@ export class MapPage extends React.Component<MapPageProps, MapPageState> {
         <AppBar title="Vue" />
 
         {this.state.isLoading ?
-          <div style={{ "text-align": "center", "vertical-align": "middle" }}>
+          <div style={{ "text-align": "center", "vertical-align": "middle" , height:"100%"}}>
             <CircularProgress size={200} thickness={7} />
           </div>
           : []

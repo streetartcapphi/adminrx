@@ -120,7 +120,7 @@ export class StMap extends React.Component<StMapProps, StMapState> {
 
       this.setState({ displayedElements: n });
       if (this.elementsCB) {
-        // call function
+        // call function for informing the visible elements
         this.elementsCB(n);
       }
     }
