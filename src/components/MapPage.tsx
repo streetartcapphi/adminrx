@@ -53,8 +53,8 @@ export class MapPage extends React.Component<MapPageProps, MapPageState> {
 
     let result = this.props.service.loadView(viewPath).then((l) => {
 
-      console.log("lost received from loadView :");
-      console.log(l);
+      // console.log("lost received from loadView :");
+      // console.log(l);
       var stmap: StMap = (this.refs["mymap"]) as StMap;
 
       // set the loaded elements
@@ -107,6 +107,9 @@ export class MapPage extends React.Component<MapPageProps, MapPageState> {
     var r = this.service.saveAlonePosition(e, "update position to " + e.content.geometry.coordinates);
     r.then((e) => {
       console.log("saved !!");
+      var stmap: StMap = (this.refs["mymap"]) as StMap;
+      stmap.forceUpdate();
+
     }).catch((e) => {
       console.error(e);
     });

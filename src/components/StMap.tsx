@@ -15,7 +15,7 @@ export interface StMapProps {
   center: Leaflet.LatLngExpression,
   elements?: Array<ViewModelElement>,
   onElements: FunctionCB,
-  onSaveElement: FunctionCBElement, 
+  onSaveElement: FunctionCBElement,
   onElementClick: FunctionCBElement
 };
 
@@ -32,7 +32,7 @@ export class StMap extends React.Component<StMapProps, StMapState> {
 
   private elementsCB: FunctionCB;
   private saveElementCB: FunctionCBElement;
-  private onElementClicked : FunctionCBElement;
+  private onElementClicked: FunctionCBElement;
 
   constructor(props: StMapProps) {
     super(props);
@@ -145,9 +145,9 @@ export class StMap extends React.Component<StMapProps, StMapState> {
 
           let currentElement = element;
           let clicked = () => {
-             if (self.onElementClicked) {
-               self.onElementClicked(currentElement);
-             }
+            if (self.onElementClicked) {
+              self.onElementClicked(currentElement);
+            }
           };
 
           let i = new Leaflet.Icon({

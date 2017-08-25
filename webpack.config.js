@@ -37,9 +37,9 @@ module.exports = {
     externals: {
         "react": "React",
         "react-dom": "ReactDOM",
-        "typescript-logging": "typescript-logging"
+       //  "typescript-logging": "typescript-logging"
     },
-
+    
     devServer: {
         historyApiFallback: {
             index: 'index.html'
@@ -52,8 +52,9 @@ module.exports = {
               {from:'node_modules/react-dom/dist',to:'libs'},
               {from:'node_modules/leaflet/dist',to:'libs'},
               {from:'node_modules/react-leaflet/dist',to:'libs'},
-              {from:'node_modules/github-api/dist',to:'libs'}
-
+              {from:'node_modules/github-api/dist',to:'libs'},
+            //  {from:'node_modules/typescript-logging/dist/bundle',to:'libs'}
+              
           ]),
     ]
 
