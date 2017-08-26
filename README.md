@@ -2,13 +2,17 @@
 
 
 
-This application let manipulate the github geographic data to permit 
+This application let manipulate the github geographic data stored in locations repository
+
+see it in action : https://streetartcapphi.github.io/adminrx
 
 
 
+![](doc/screenshot.png)
 
 
-## Work on the application
+
+## Start on the application development
 
 
 
