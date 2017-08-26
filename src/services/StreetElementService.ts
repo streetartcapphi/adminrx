@@ -1,12 +1,30 @@
+//  Copyright 2017 Patrice Freydiere
+
+//  Permission is hereby granted, free of charge, to any person obtaining a 
+//  copy of this software and associated documentation files (the "Software"), 
+//  to deal in the Software without restriction, including without limitation 
+//  the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+//  and/or sell copies of the Software, and to permit persons to whom the 
+//  Software is furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in 
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+//  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+//  DEALINGS IN THE SOFTWARE.
 
 /// <reference path="geojson.d.ts"/>
 
 import {Deferred} from "ts-deferred";
-
 import {factory} from "../LogConfig";
 
-
 const log = factory.getLogger("services.streetelementservice");
+
 const WORKING_REPO = "streetartcapphi";
 
 
@@ -39,7 +57,9 @@ export class StreetElementService {
 
     }
 
-    public connect(user : string,password : string) {
+    public connect(user : string,password : string) : Promise<string> {
+
+      var d = new Deferred<string>();
 
       // basic auth
       this.gh = new GitHub({
@@ -50,8 +70,19 @@ export class StreetElementService {
           */
       });
 
-      this.repo = this.gh.getRepo(WORKING_REPO, "locations");
-      log.debug("repository :" + JSON.stringify(this.repo));
+      let userObject = this.gh.getUser();
+      var p = userObject.listRepos();
+      p.then( ()=> {
+        this.repo = this.gh.getRepo(WORKING_REPO, "locations");
+        log.debug("repository :" + JSON.stringify(this.repo));
+        d.resolve(null);
+      } ).catch( (e) => {
+        log.error("error in connecting to github");
+        d.reject(e);
+      });
+
+      return d.promise;
+      
     }
 
     public isConnected() : boolean {
@@ -74,7 +105,6 @@ export class StreetElementService {
         }
         cb(r,t);
       });
-
     }
 
 
