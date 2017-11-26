@@ -289,10 +289,12 @@ export class StreetElementService {
 
       var content_sent : any = content;
       if (typeof content_sent !== 'string') {
+           // stringify the element
            content_sent = JSON.stringify(content_sent);
+             
       }
 
-      this.repo.writeFile(this.branch, filePath, content_sent, "initial message",(r:any,t:any) => {
+      this.repo.writeFile(this.branch, filePath, content_sent, "modification "+ (new Date().getMilliseconds()),(r:any,t:any) => {
         log.debug("error returned :" + r);
         log.debug("result :" + JSON.stringify(t));
         log.debug("executed, call callback");

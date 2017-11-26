@@ -12,7 +12,7 @@ module.exports = {
     },
 
     // Enable sourcemaps for debugging webpack's output.
-    devtool: "source-map",
+    //devtool: "source-map",
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
@@ -22,10 +22,10 @@ module.exports = {
     module: {
         rules: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader" }
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
+            // ,{ enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
         ]
     },
 
@@ -48,11 +48,13 @@ module.exports = {
 
     plugins: [
       new CopyWebpackPlugin([
-              {from:'node_modules/react/dist',to:'libs'},
-              {from:'node_modules/react-dom/dist',to:'libs'},
-              {from:'node_modules/leaflet/dist',to:'libs'},
-              {from:'node_modules/react-leaflet/dist',to:'libs'},
-              {from:'node_modules/github-api/dist',to:'libs'},
+              {from:'node_modules/react/dist/*min.js',to:'libs', flatten:true, ignore:["*.map"]},
+              {from:'node_modules/react-dom/dist/*min.js',to:'libs', flatten:true, ignore:["*.map"]},
+              {from:'node_modules/leaflet/dist/leaflet.*',to:'libs', flatten:true, ignore:["*.map"]},
+              {from:'node_modules/leaflet/dist/images',to:'libs/images', ignore:["*.map"]},
+              
+              {from:'node_modules/react-leaflet/dist/*min.js',to:'libs', flatten:true, ignore:["*.map"]},
+              {from:'node_modules/github-api/dist/GitHub.bundle.modified.js',to:'libs', ignore:["*.map"]},
             //  {from:'node_modules/typescript-logging/dist/bundle',to:'libs'}
               
           ]),
